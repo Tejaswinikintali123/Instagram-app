@@ -13,6 +13,14 @@ module.exports = function validateProfileInput(data) {
   if (Validator.isEmpty(data.handle)) {
     errors.handle = "Profile handle is required";
   }
+  if (!isEmpty(data.website)) {
+    if (!Validator.isURL(data.website)) {
+      errors.website = "Not a valid URL";
+    }
+  }
+  if (Validator.isEmpty(data.location)) {
+    errors.Location = "Location field is required";
+  }
 
   if (Validator.isEmpty(data.status)) {
     errors.status = "Status field is required";

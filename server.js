@@ -1,25 +1,32 @@
 const express = require("express");
-const mongoose = require("mongoose");
-const bodyparser = require("body-parser");
 const app = express();
+
+const mongoose = require("mongoose");
 const db = require("./config/keys").mongoURI;
-const users = require("./routes/api/users");
-const post = require("./routes/api/post");
-const profile = require("./routes/api/profile");
-//Body parser middleware
-app.use(bodyparser.urlencoded({ extended: false }));
-app.use(bodyparser.json());
-//connect to db
+// Connect to DB
 mongoose
   .connect(db)
-  .then(() => console.log("MongDb Connected"))
+  .then(() => console.log("mongodb connected"))
   .catch(err => console.log(err));
-//Let's write our first route
-app.get("/", (req, res) => res.send("Hello"));
+
+const bodyparser = require("body-parser");
+// Body parser middleware
+app.use(bodyparser.urlencoded({ extended: false }));
+app.use(bodyparser.json());
+
+const passport = require("passport");
+//passport middleware
+app.use(passport.initialize());
+//passport configure
+require("./config/passport")(passport);
+
+const users = require("./routes/api/users");
+const profile = require("./routes/api/profile");
+const posts = require("./routes/api/post");
+// app.get('/', (req, res)=> res.send('Hello!'));
 app.use("/api/users", users);
+app.use("/api/post", posts);
 app.use("/api/profile", profile);
-app.use("/api/post", post);
 
-const port = process.env.PORT || 5300;
-app.listen(port, () => console.log(`server running on port ${port}`));
-
+const port = process.env.PORT || 5500;
+app.listen(port, () => console.log(`Server running on ${port}`));

@@ -1,5 +1,7 @@
 const express = require("express");
 const router = express.Router();
+//router.get("/test", (req, res) => res.json({ msg: "profile api works" }));
+
 const mongoose = require("mongoose");
 const passport = require("passport");
 
@@ -98,7 +100,7 @@ router.get("/user/:user_id", (req, res) => {
     .catch(err => res.status(404).json(err));
 });
 
-//@route POST api/profile/user/follow/:user_id
+//@route POST api/profile/follow/:user_id
 // @desc    follow someone's profile
 // @access  Private
 
@@ -106,34 +108,34 @@ router.post(
   "/follow/:user_id",
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
-    Profile.findbyId(req.params.id)
+    console.log(req.params.user_id);
+    Profile.findOne({ user: req.user.id })
       .then(profile => {
         if (
+          profile.followers &&
           profile.followers.filter(
-            follow => follow.user.toString() === req.user.id
+            follow => follow.user.toString() === req.params.user_id
           ).length > 0
         ) {
           return res
             .status(400)
             .json({ alreadyliked: "User already following this Profile" });
         }
+        // Add user id to followers array
 
-        // Add user id to likes array
-        profile.followers.unshift({ user: req.user.id });
+        profile.followers.push({ user: req.params.user_id });
         profile.save().then(profile => res.json(profile));
-        Profile.findbyId(req.user.id)
-          .then(myprofile => {
-            myprofile.following.unshift({ user: req.params.id });
-            myprofile.save().then(profile => res.json(profile));
-          })
-          .catch(err =>
-            res.status(404).json({ myprofilenotfound: "No profile found" })
-          );
+        res.status(200).json("successfully added.");
+        //Add user id to following array
+        Profile.findOne({ user: req.params.user_id }).then(profile => {
+          profile.following.push({ user: req.user.id });
+          profile.save().then(profile => res.json(profile));
+        });
       })
-
-      .catch(err =>
-        res.status(404).json({ profilenotfound: "No profile found" })
-      );
+      .catch(err => {
+        console.log(err);
+        res.status(404).json({ profilenotfound: "No profile found" });
+      });
   }
 );
 
@@ -144,11 +146,11 @@ router.post(
   "/unfollow/:user_id",
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
-    Profile.findbyId(req.params.id)
+    Profile.findOne({ user: req.user.id })
       .then(profile => {
         if (
           profile.followers.filter(
-            follow => follow.user.toString() === req.user.id
+            follow => follow.user.toString() === req.params.user_id
           ).length === 0
         ) {
           return res
@@ -166,21 +168,24 @@ router.post(
 
         // Save
         profile.save().then(profile => res.json(profile));
-        Profile.findbyId(req.user.id)
+        Profile.findOne({ user: req.params.user_id })
           .then(myprofile => {
-            const removeIndex = myprofile.following
-              .map(item => item.user.toString())
-              .indexOf(req.params.id);
-            myprofile.following.splice(removeIndex, 1);
-            myprofile.save().then(profile => res.json(profile));
+            if (myprofile.following && myprofile.following.length > 0) {
+              const removeIndex = myprofile.following
+                .map(item => item.user.toString())
+                .indexOf(req.params.id);
+              myprofile.following.splice(removeIndex, 1);
+              myprofile.save().then(profile => res.json(myprofile));
+            }
           })
           .catch(err =>
             res.status(404).json({ myprofilenotfound: "No profile found" })
           );
       })
-      .catch(err =>
-        res.status(404).json({ profilenotfound: "No profile found" })
-      );
+      .catch(err => {
+        console.log(err);
+        res.status(404).json({ profilenotfound: "No profile found" });
+      });
   }
 );
 
@@ -203,7 +208,10 @@ router.post(
     profileFields.user = req.user.id;
     if (req.body.handle) profileFields.handle = req.body.handle;
     if (req.body.location) profileFields.location = req.body.location;
+    if (req.body.website) profileFields.website = req.body.website;
+    if (req.body.status) profileFields.status = req.body.status;
     if (req.body.bio) profileFields.bio = req.body.bio;
+    if (req.res.phone) profileFields.phone = req.body.phone;
     // Hobbies- Spilt into array
     if (typeof req.body.hobbies !== "undefined") {
       profileFields.hobbies = req.body.hobbies.split(",");

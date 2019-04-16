@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const mongoose = require('mongoose');
-const passport = require('passport');
+const mongoose = require("mongoose");
+const passport = require("passport");
 
 // Post model
 const Post = require("../../models/Post");
@@ -20,7 +20,7 @@ router.get("/", (req, res) => {
     .catch(err => res.status(404).json({ nopostsfound: "No posts found" }));
 });
 
-// @route   GET api/posts/:id
+// @route   GET api/post/:id
 // @desc    Get post by id
 // @access  Public
 router.get("/:id", (req, res) => {
@@ -31,7 +31,7 @@ router.get("/:id", (req, res) => {
     );
 });
 
-// @route   POST api/posts
+// @route   POST api/post
 // @desc    Create post
 // @access  Private
 router.post(
@@ -47,7 +47,8 @@ router.post(
     }
 
     const newPost = new Post({
-      text: req.body.text,
+      image: req.body.image,
+      caption: req.body.caption,
       name: req.body.name,
       avatar: req.body.avatar,
       user: req.user.id
@@ -57,7 +58,7 @@ router.post(
   }
 );
 
-// @route   DELETE api/posts/:id
+// @route   DELETE api/post/:id
 // @desc    Delete post
 // @access  Private
 router.delete(
@@ -82,7 +83,7 @@ router.delete(
   }
 );
 
-// @route   POST api/posts/like/:id
+// @route   POST api/post/like/:id
 // @desc    Like post
 // @access  Private
 router.post(
@@ -146,7 +147,7 @@ router.post(
   }
 );
 
-// @route   POST api/posts/comment/:id
+// @route   POST api/post/comment/:id
 // @desc    Add comment to post
 // @access  Private
 router.post(

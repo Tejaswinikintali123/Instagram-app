@@ -1,5 +1,6 @@
 const validator = require("validator");
 const isEmpty = require("./is-empty");
+
 module.exports = function validateLoginInput(data) {
   let errors = {};
 
@@ -7,20 +8,22 @@ module.exports = function validateLoginInput(data) {
   data.password = !isEmpty(data.password) ? data.password : "";
 
   if (validator.isEmpty(data.email)) {
-    errors.name = "Email field is required";
+    errors.email = "Email Is Required";
   }
+
   if (!validator.isEmail(data.email)) {
-    errors.email = "Email is invalid";
+    errors.email = "Email Is Invalid";
   }
+
   if (!validator.isLength(data.password, { min: 6, max: 30 })) {
-    errors.password = "password must be between 6 and 30 characters";
-    
+    errors.password = "Password must be between 6 and 30 characters";
   }
   if (validator.isEmpty(data.password)) {
-    errors.password = "password field is required";
-    }
+    errors.password = "Password Is Required";
+  }
+
   return {
     errors,
-    isvalid: isEmpty(errors)
+    isValid: isEmpty(errors)
   };
 };

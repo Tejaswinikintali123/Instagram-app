@@ -6,27 +6,30 @@ const jwt = require("jsonwebtoken");
 const keys = require("../../config/keys");
 const passport = require("passport");
 
-// Load user model
+//Load user model
 const User = require("../../models/User");
+
 //Load input validation
 const validateRegisterInput = require("../../validation/register");
 const validateLoginInput = require("../../validation/login");
 
-//@route POST api/users/register
-//@desc Register user
+//@route  POST api/user/register
+//@desc Register User
 //@access public
+
 router.post("/register", (req, res) => {
-  const { errors, isvalid } = validateRegisterInput(req.body);
-  //check validation
-  if (!isvalid) {
+  const { errors, isValid } = validateRegisterInput(req.body);
+
+  //Check Validation
+  if (!isValid) {
     return res.status(400).json(errors);
   }
 
   User.findOne({ email: req.body.email })
     .then(user => {
       if (user) {
-        errors.email = "Email already exists";
-        return res.status(400).json(errors);
+        errors.email = "Email already exist";
+        return res.status(400).json({ errors });
       } else {
         const avatar = gravatar.url(req.body.email, {
           s: "200",
@@ -42,54 +45,63 @@ router.post("/register", (req, res) => {
 
         bcrypt.genSalt(10, (err, salt) => {
           if (err) {
-            errors.password = "Failed encrypting";
-            return res.status(400).json(errors);
+            errors.password = "Password Falied Encrypting";
+            return res.status(400).json({ errors });
           }
+
           bcrypt.hash(newUser.password, salt, (err, hash) => {
             if (err) {
-              errors.password = "Failed hashing";
-              return res.status(400).json(errors);
+              errors.password = "Hashing Falied Encrypting";
+              return res.status(400).json({ errors });
             }
             newUser.password = hash;
             newUser
               .save()
-              .then(User => res.json(User))
+              .then(user => res.json(user))
               .catch(err => console.log(err));
           });
         });
       }
     })
-    .catch();
+    .catch(err => console.log(err));
 });
-//@route POST api/users/register
-//@desc Register user
-//@access public
-router.post("/login", (req, res) => {
-  const { errors, isvalid } = validateLoginInput(req.body);
 
-  //check validation
-  if (!isvalid) {
+//@route  POST api/user/login
+//@desc Login User
+//@access public
+
+router.post("/login", (req, res) => {
+  console.log("Login: " + req.body.email);
+  console.log("Login: " + req.body.password);
+  const { errors, isValid } = validateLoginInput(req.body);
+  console.log("Login Validation: " + errors);
+  //Check Validation
+  if (!isValid) {
     return res.status(400).json(errors);
   }
+
   const email = req.body.email;
   const password = req.body.password;
+
   User.findOne({ email })
     .then(user => {
       if (!user) {
-        errors.email = "user not found";
-        return res.status(400).json(errors);
+        errors.email = "User not found";
+        return res.status(400).json({ errors });
       }
 
-      //check password
+      //Check Password
+
       bcrypt.compare(password, user.password).then(isMatch => {
         if (isMatch) {
-          //user matched
+          //User macthed
           const payload = {
             id: user.id,
             name: user.name,
             avatar: user.avatar
           };
-          //sign token
+
+          //Sign token
           jwt.sign(
             payload,
             keys.secretOrKey,
@@ -102,16 +114,18 @@ router.post("/login", (req, res) => {
             }
           );
         } else {
-          errors.password = "password Incorrect";
-          return res.status(400).json(errors);
+          errors.password = "Password Incorrect";
+          return res.status(400).json({ errors });
         }
       });
     })
     .catch(err => console.log(err));
 });
-//@route POST api/users/current
-//@desc Register user
+
+//@route  GET api/user/profile
+//@desc return current user info
 //@access private
+
 router.get(
   "/current",
   passport.authenticate("jwt", { session: false }),

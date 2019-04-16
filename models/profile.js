@@ -12,7 +12,8 @@ const ProfileSchema = new Schema({
     max: 40
   },
   location: {
-    type: String
+    type: String,
+    required: true
   },
 
   hobbies: {
@@ -53,8 +54,7 @@ const ProfileSchema = new Schema({
   },
 
   status: {
-    type: String,
-    required: true
+    type: String
   },
   bio: {
     type: String
