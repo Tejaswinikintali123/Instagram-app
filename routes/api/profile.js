@@ -30,17 +30,14 @@ router.get(
           return res.status(404).json(errors);
         }
         user.profile = profile;
-      })
-      .catch(err => res.status(404).json(err));
-
-    Post.findOne({ user: req.user.id })
-      .then(posts => {
-        if (posts) {
+        Post.findOne({ user: req.user.id })
+        .then(posts => {
           user.posts = posts;
-        }
-        res.json(user);
+          res.json(user);
+        })
+        .catch(err => res.status(500).json(err));
       })
-      .catch(err => res.status(404).json(err));
+      .catch(err => res.status(500).json(err));
   }
 );
 
@@ -59,17 +56,17 @@ router.get("/handle/:handle", (req, res) => {
         res.status(404).json(errors);
       }
       user.profile = profile;
+      Post.findOne({ user: req.user_id })
+      .then(posts => {
+        if (posts) {
+          user.posts = posts;
+        }
+        res.json(user);
+      })
+      .catch(err => res.status(500).json(err));
     })
-    .catch(err => res.status(404).json(err));
+    .catch(err => res.status(500).json(err));
 
-  Post.findOne({ user: req.user.id })
-    .then(posts => {
-      if (posts) {
-        user.posts = posts;
-      }
-      res.json(user);
-    })
-    .catch(err => res.status(404).json(err));
 });
 
 // @route   GET api/profile/user/:user_id
@@ -80,24 +77,23 @@ router.get("/user/:user_id", (req, res) => {
   const errors = {};
   const user = {};
 
-  Profile.findOne({ handle: req.params.handle })
+  Profile.findOne({ user: req.params.user_id })
     .then(profile => {
       if (!profile) {
         errors.noprofile = "There is no profile for this user";
         res.status(404).json(errors);
       }
       user.profile = profile;
+      Post.findOne({ user: req.user_id })
+      .then(posts => {
+        if (posts) {
+          user.posts = posts;
+        }
+        res.json(user);
+      })
+      .catch(err => res.status(500).json(err));
     })
-    .catch(err => res.status(404).json(err));
-
-  Post.findOne({ user: req.user.id })
-    .then(posts => {
-      if (posts) {
-        user.posts = posts;
-      }
-      res.json(user);
-    })
-    .catch(err => res.status(404).json(err));
+    .catch(err => res.status(500).json(err));
 });
 
 //@route POST api/profile/follow/:user_id
@@ -125,16 +121,21 @@ router.post(
 
         profile.followers.push({ user: req.params.user_id });
         profile.save().then(profile => res.json(profile));
-        res.status(200).json("successfully added.");
+
         //Add user id to following array
-        Profile.findOne({ user: req.params.user_id }).then(profile => {
-          profile.following.push({ user: req.user.id });
-          profile.save().then(profile => res.json(profile));
-        });
+        Profile.findOne({ user: req.params.user_id })
+          .then(profile => {
+            profile.following.push({ user: req.user.id });
+            profile.save().then(profile => res.json(profile));
+            res.status(200).json("successfully added.");
+          })
+          .catch(error => {
+            res.status(500).json(error);
+          });
       })
       .catch(err => {
         console.log(err);
-        res.status(404).json({ profilenotfound: "No profile found" });
+        res.status(500).json(err);
       });
   }
 );
