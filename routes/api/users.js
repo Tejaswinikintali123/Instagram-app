@@ -13,7 +13,7 @@ const User = require("../../models/User");
 const validateRegisterInput = require("../../validation/register");
 const validateLoginInput = require("../../validation/login");
 
-//@route  POST api/user/register
+//@route  POST api/users/register
 //@desc Register User
 //@access public
 
@@ -66,7 +66,7 @@ router.post("/register", (req, res) => {
     .catch(err => console.log(err));
 });
 
-//@route  POST api/user/login
+//@route  POST api/users/login
 //@desc Login User
 //@access public
 
@@ -122,7 +122,7 @@ router.post("/login", (req, res) => {
     .catch(err => console.log(err));
 });
 
-//@route  GET api/user/profile
+//@route  GET api/users/profile
 //@desc return current user info
 //@access private
 
