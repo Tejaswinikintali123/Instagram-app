@@ -8,14 +8,15 @@ const PostSchema = new Schema([
       type: Schema.Types.ObjectId,
       ref: "users"
     },
+    text: {
+      type: String
+    },
     image: {
-      type: String,
-      required: true
+      type: String
     },
 
     caption: {
-      type: String,
-      required: true
+      type: String
     },
 
     name: {
