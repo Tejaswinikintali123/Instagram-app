@@ -17,7 +17,7 @@ const ProfileSchema = new Schema({
   },
 
   hobbies: {
-    type: [String],
+    type: String,
     required: true
   },
   followers: [
@@ -48,19 +48,13 @@ const ProfileSchema = new Schema({
       }
     }
   ],
-
-  website: {
-    type: String
-  },
-
   status: {
     type: String
   },
   bio: {
     type: String
   },
-
-  phone: {
+  gender: {
     type: String
   },
   date: {

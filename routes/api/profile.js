@@ -215,7 +215,7 @@ router.post(
     if (req.res.phone) profileFields.phone = req.body.phone;
     // Hobbies- Spilt into array
     if (typeof req.body.hobbies !== "undefined") {
-      profileFields.hobbies = req.body.hobbies.split(",");
+      profileFields.hobbies = req.body.hobbies;
     }
 
     Profile.findOne({ user: req.user.id }).then(profile => {
